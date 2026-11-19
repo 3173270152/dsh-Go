@@ -127,9 +127,13 @@ def main():
         }, indent=2) + '\n')
         (seed / 'pnpm-workspace.yaml').write_text(
             'packages:\n  - .\n\nnodeLinker: hoisted\nautoInstallPeers: false\n')
-        node_bin = args.node.parent
-        run('seed-install', [str(args.npm), *config['installation']['arguments'],
-                             '--cache', str(args.cache), '--ignore-scripts'], seed)
+        # config['installation']['arguments'] starts with `ci`, which refuses a
+        # directory without a package-lock.json. The seed profile is composed
+        # here, so it uses `install` with the same flags minus the lockfile-only ones.
+        seed_args = [a for a in config['installation']['arguments']
+                     if a not in ('ci', '--install-links=true')]
+        run('seed-install', [str(args.npm), 'install', *seed_args,
+                             '--cache', str(args.cache)], seed)
         # Repair dsh-purge against the runtime it now targets: its own patch table still
         # points at modules the engine moved, so #35/#91 silently stay "not applicable".
         fixer = repo / 'runtime' / 'presets' / 'purge-fix.py'
