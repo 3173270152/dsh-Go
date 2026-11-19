@@ -84,7 +84,31 @@ jobs:
 
       - name: 编译 iOS App（未签名）
         working-directory: app
-        run: bash ../tooling/ios/build.sh --release --no-codesign
+        env:
+          # 显式关掉所有 target 的签名。主 target 由 --no-codesign 覆盖，但
+          # CompanionWidget（Widget Extension）这类嵌套 target 仍会去要
+          # DEVELOPMENT_TEAM，必须用这两个变量一起压住。
+          CODE_SIGNING_ALLOWED: "NO"
+          CODE_SIGNING_REQUIRED: "NO"
+          CODE_SIGN_IDENTITY: ""
+          EXPANDED_CODE_SIGN_IDENTITY: ""
+        run: |
+          set -o pipefail
+          log="$RUNNER_TEMP/xcode-build.log"
+          if bash ../tooling/ios/build.sh --release --no-codesign -v 2>&1 | tee "$log"; then
+            echo "编译成功"
+          else
+            # Flutter 会把 Xcode 的真实错误压成一句 Team 提示，这里把原始错误捞出来
+            echo "::group::Xcode 真实错误"
+            grep -nE "error:|\*\* BUILD FAILED \*\*|requires a provisioning|CodeSign .* failed|does not support provisioning" "$log" \
+              | head -40 | sed -e 's/%/%25/g' -e 's/^/::error::/'
+            echo "::endgroup::"
+            echo "::group::日志尾部（120 行）"
+            tail -120 "$log" | cut -c1-400
+            echo "::endgroup::"
+            cp "$log" "$RUNNER_TEMP/xcode-build-full.log"
+            exit 1
+          fi
 
       - name: 打包 IPA
         run: |
@@ -114,4 +138,5 @@ jobs:
           name: ios-ipa-logs
           path: |
             ${{ runner.temp }}/*.log
+            app/build/ios/iphoneos/*.app/Info.plist
           if-no-files-found: ignore
