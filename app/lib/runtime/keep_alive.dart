@@ -6,6 +6,7 @@
 //   location —— 持续定位，需要 UIBackgroundModes 追加 location 且授权「始终允许」
 //
 // 这不是常驻：内存压力大时系统仍会回收。要真常驻只能越狱用 launchd。
+// 类名带 Background 前缀：Flutter 的 sliver.dart 已有同名 KeepAlive widget。
 import 'package:flutter/services.dart';
 
 /// 一侧开关的状态快照。
@@ -39,8 +40,8 @@ class KeepAliveStatus {
       );
 }
 
-class KeepAlive {
-  const KeepAlive();
+class BackgroundKeepAlive {
+  const BackgroundKeepAlive();
 
   static const _channel = MethodChannel('dshgo/keepalive');
 

@@ -189,7 +189,7 @@ class _SuspendedPage extends ConsumerStatefulWidget {
 class _SuspendedPageState extends ConsumerState<_SuspendedPage> {
   late final AppLifecycleListener _lifecycle;
 
-  static const _keepAlive = KeepAlive();
+  static const _keepAlive = BackgroundKeepAlive();
   KeepAliveStatus _keepAliveStatus = const KeepAliveStatus();
   bool _keepAliveLoaded = false;
 
@@ -215,14 +215,14 @@ class _SuspendedPageState extends ConsumerState<_SuspendedPage> {
   Future<void> _toggleAudio(bool on) async {
     final ok = await _keepAlive.setAudio(on);
     if (!mounted) return;
-    if (!ok && on) showBriefNotice(context, l10n.keepAliveAudioFailed);
+    if (!ok && on) showBriefNotice(context, context.l10n.keepAliveAudioFailed);
     await _refreshKeepAlive();
   }
 
   Future<void> _toggleLocation(bool on) async {
     final ok = await _keepAlive.setLocation(on);
     if (!mounted) return;
-    if (!ok && on) showBriefNotice(context, l10n.keepAliveLocationFailed);
+    if (!ok && on) showBriefNotice(context, context.l10n.keepAliveLocationFailed);
     await _refreshKeepAlive();
   }
 
