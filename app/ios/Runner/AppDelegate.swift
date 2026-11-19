@@ -59,6 +59,11 @@ import UserNotifications
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "DshPlugin") {
       DshPlugin.register(with: registrar)
+      // Background keep-alive: silent audio + optional location, exposed as the
+      // dshgo/keepalive channel the settings page drives.
+      if let keepAliveRegistrar = engineBridge.pluginRegistry.registrar(forPlugin: "KeepAliveChannel") {
+        KeepAliveChannel.register(with: keepAliveRegistrar)
+      }
       IOSPhoneControl.shared.register(messenger: registrar.messenger())
       IOSPhoneLink.shared.register(messenger: registrar.messenger(), presenter: { topViewController() })
       IOSPetOverlay.shared.register(registrar: registrar)
